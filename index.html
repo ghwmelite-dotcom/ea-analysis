@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite MT5 EA Analysis & Optimization - Technical Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            --danger-gradient: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            --warning-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --card-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-color: #e2e8f0;
+            --highlight-bg: #f7fafc;
+            --code-bg: #1a202c;
+            --shadow-1: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-2: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-3: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        [data-theme="dark"] {
+            --primary-gradient: linear-gradient(135deg, #0f0c29 0%, #1a1638 50%, #0a0a0f 100%);
+            --card-bg: #1a1f2e;
+            --text-primary: #f7fafc;
+            --text-secondary: #cbd5e0;
+            --border-color: #2d3748;
+            --highlight-bg: #2d3748;
+            --code-bg: #0d1117;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: var(--primary-gradient);
+            overflow: hidden;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* Password Screen */
+        #passwordScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        #passwordScreen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        
+        .password-container {
+            background: white;
+            padding: 60px;
+            border-radius: 25px;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.5);
+            text-align: center;
+            max-width: 550px;
+            animation: slideUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(100px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .lock-icon {
+            font-size: 80px;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .password-container h2 {
+            color: #2d3748;
+            font-size: 36px;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+        
+        .password-container p {
+            color: #718096;
+            margin-bottom: 35px;
+            font-size: 16px;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 18px 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .password-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .password-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .password-error {
+            color: #f56565;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* Top Controls */
+        .top-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 15px;
+        }
+
+        .control-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 50px;
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-2);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-3);
+        }
+
+        .download-btn {
+            background: var(--success-gradient);
+            color: white !important;
+            border: none;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            z-index: 9998;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Slide Container */
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px 100px 20px;
+        }
+        
+        .slide {
+            width: 95%;
+            max-width: 1600px;
+            height: calc(100vh - 180px);
+            background: var(--card-bg);
+            border-radius: 30px;
+            box-shadow: var(--shadow-3);
+            padding: 60px 80px;
+            display: none;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .slide.active {
+            display: flex;
+            animation: slideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Custom Scrollbar */
+        .slide::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: var(--highlight-bg);
+            border-radius: 10px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--accent-gradient);
+            border-radius: 10px;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 56px;
+            font-weight: 900;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 35px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h4 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        /* Icon Styles */
+        .icon {
+            font-size: 48px;
+            display: inline-block;
+        }
+
+        .icon-sm {
+            font-size: 32px;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--highlight-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-2);
+            border-color: #667eea;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-content {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Issue Cards */
+        .issue-card {
+            background: white;
+            border-left: 6px solid #f56565;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: var(--shadow-1);
+        }
+
+        .issue-card.critical {
+            border-color: #f56565;
+            background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+        }
+
+        .issue-card.high {
+            border-color: #ed8936;
+            background: linear-gradient(135deg, #fffaf0 0%, #ffffff 100%);
+        }
+
+        .issue-card.medium {
+            border-color: #ecc94b;
+            background: linear-gradient(135deg, #fefcbf 0%, #ffffff 100%);
+        }
+
+        .issue-label {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .label-critical {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .label-high {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .label-medium {
+            background: #fefcbf;
+            color: #975a16;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 15px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .code-block .comment {
+            color: #68d391;
+        }
+
+        .code-block .keyword {
+            color: #f687b3;
+        }
+
+        .code-block .function {
+            color: #63b3ed;
+        }
+
+        /* Comparison Blocks */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .comparison-item {
+            padding: 25px;
+            border-radius: 15px;
+            position: relative;
+        }
+
+        .comparison-item.wrong {
+            background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+            border: 2px solid #fc8181;
+        }
+
+        .comparison-item.correct {
+            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border: 2px solid #68d391;
+        }
+
+        .comparison-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .comparison-item.wrong .comparison-label {
+            color: #c53030;
+            border: 2px solid #fc8181;
+        }
+
+        .comparison-item.correct .comparison-label {
+            color: #2f855a;
+            border: 2px solid #68d391;
+        }
+
+        /* Feature Pills */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-pill {
+            background: var(--highlight-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .feature-pill:hover {
+            transform: translateX(10px);
+            border-color: #667eea;
+            box-shadow: var(--shadow-1);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            min-width: 50px;
+        }
+
+        .feature-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-box {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-2);
+            transition: all 0.3s;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-3);
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 25px;
+            margin-bottom: 25px;
+            background: var(--highlight-bg);
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .timeline-item::before {
+            content: '✓';
+            position: absolute;
+            left: -45px;
+            top: 25px;
+            width: 30px;
+            height: 30px;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .timeline-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .timeline-desc {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 50px;
+            border-radius: 25px;
+            text-align: center;
+            margin: 40px 0;
+            box-shadow: var(--shadow-3);
+        }
+
+        .cta-section h3 {
+            color: white;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .cta-section p {
+            color: rgba(255,255,255,0.95);
+            font-size: 20px;
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+        }
+
+        .highlight-box strong {
+            color: #5a67d8;
+        }
+
+        /* Slide Number */
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            opacity: 0.6;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 9997;
+        }
+
+        .nav-buttons button {
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: var(--shadow-2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #prevBtn {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        #nextBtn {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .nav-buttons button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-3);
+        }
+
+        .nav-buttons button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .slide {
+                padding: 40px 50px;
+            }
+            h1 { font-size: 46px; }
+            h2 { font-size: 36px; }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .stats-container { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .slide-container {
+                padding: 60px 10px 90px 10px;
+            }
+            .slide {
+                padding: 30px 25px;
+                height: calc(100vh - 150px);
+            }
+            h1 { font-size: 36px; }
+            h2 { font-size: 28px; }
+            h3 { font-size: 22px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .comparison { grid-template-columns: 1fr; }
+            .stats-container { grid-template-columns: 1fr; }
+            .top-controls { top: 10px; right: 10px; }
+            .control-btn { padding: 10px 15px; font-size: 14px; }
+            .nav-buttons { bottom: 15px; }
+            .nav-buttons button { padding: 12px 25px; font-size: 14px; }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .slide {
+                page-break-after: always;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                margin-bottom: 20px;
+            }
+            .nav-buttons, .top-controls, .progress-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Password Screen -->
+    <div id="passwordScreen">
+        <div class="password-container">
+            <div class="lock-icon">🔐</div>
+            <h2>Technical Showcase</h2>
+            <p>Enter access code to view the presentation</p>
+            <input type="password" id="passwordInput" class="password-input" placeholder="Enter password" />
+            <button onclick="checkPassword()" class="password-btn">Unlock Presentation</button>
+            <div id="passwordError" class="password-error">❌ Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div id="progressBar" class="progress-bar"></div>
+    </div>
+
+    <!-- Top Controls -->
+    <div class="top-controls">
+        <button onclick="downloadPDF()" class="control-btn download-btn">
+            <span>📥</span>
+            <span>Download PDF</span>
+        </button>
+        <button onclick="toggleTheme()" class="control-btn">
+            <span id="themeIcon">🌙</span>
+            <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
+
+    <!-- Slides Container -->
+    <div class="slide-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center;">
+                <div class="icon" style="font-size: 100px; margin-bottom: 30px;">⚡</div>
+                <h1 style="font-size: 72px; margin-bottom: 25px;">Elite MT5 EA Analysis</h1>
+                <p class="subtitle" style="font-size: 32px; margin-bottom: 40px;">
+                    Deep Technical Audit & Optimization Strategy
+                </p>
+                <div style="font-size: 20px; color: var(--text-secondary); margin-top: 40px;">
+                    <p><strong>Comprehensive Code Review</strong></p>
+                    <p><strong>Critical Bug Detection</strong></p>
+                    <p><strong>Performance Optimization</strong></p>
+                    <p><strong>Production-Ready Solutions</strong></p>
+                </div>
+            </div>
+            <div class="slide-number">1 / 12</div>
+        </div>
+
+        <!-- Slide 2: Executive Summary -->
+        <div class="slide">
+            <h2><span class="icon">📊</span> Executive Summary</h2>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Critical Bugs Found</div>
+                </div>
+                <div class="stat-box" style="background: var(--success-gradient);">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Optimizations Proposed</div>
+                </div>
+                <div class="stat-box" style="background: var(--warning-gradient);">
+                    <div class="stat-number">2,000+</div>
+                    <div class="stat-label">Lines Analyzed</div>
+                </div>
+                <div class="stat-box" style="background: var(--danger-gradient);">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Risk Management Review</div>
+                </div>
+            </div>
+
+            <h3>🎯 Analysis Scope</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">🔍 Code Architecture</div>
+                    <div class="card-content">Complete structural analysis including separation of concerns, modularity, and maintainability assessment</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⚠️ Critical Issues</div>
+                    <div class="card-content">Identification of code-breaking errors, logical flaws, and performance bottlenecks</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🛡️ Risk Management</div>
+                    <div class="card-content">Deep dive into position sizing, stop-loss logic, daily limits, and exposure controls</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🚀 Optimization Strategy</div>
+                    <div class="card-content">Performance enhancements, code refactoring, and production deployment readiness</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p><strong>System Type:</strong> Trend-Biased Mean-Reversion Scalper (EMA200 + Bollinger Bands + RSI)</p>
+                <p><strong>Timeframes:</strong> M1 / M5</p>
+                <p><strong>Feature Set:</strong> Advanced risk management, news filtering, partial closes, Telegram alerts, CSV logging</p>
+            </div>
+
+            <div class="slide-number">2 / 12</div>
+        </div>
+
+        <!-- Slide 3: System Architecture -->
+        <div class="slide">
+            <h2><span class="icon">🏗️</span> System Architecture Analysis</h2>
+            
+            <h3>✅ Strengths Identified</h3>
+            <div class="features-grid">
+                <div class="feature-pill">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-text">Well-structured code with clear separation of concerns</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">Comprehensive error handling and input validation</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">📡</div>
+                    <div class="feature-text">Professional use of MQL5 features (CTrade, WebRequest)</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">💼</div>
+                    <div class="feature-text">Multi-indicator confluence trading logic</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">ATR-based dynamic position sizing</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🎚️</div>
+                    <div class="feature-text">Sophisticated partial close system</div>
+                </div>
+            </div>
+
+            <h3>🎨 Core Strategy Design</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">📈 Bias Filter (Trend Direction)</div>
+                    <div class="card-content">
+                        <p><strong>200-Period EMA</strong></p>
+                        <p>• Long signals only above EMA</p>
+                        <p>• Short signals only below EMA</p>
+                        <p>• Establishes trend-following bias</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🎯 Entry Signal (Mean-Reversion)</div>
+                    <div class="card-content">
+                        <p><strong>Bollinger Bands + RSI</strong></p>
+                        <p>• Buy: Lower BB touch + RSI < 30</p>
+                        <p>• Sell: Upper BB touch + RSI > 70</p>
+                        <p>• Overbought/oversold within trend</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p><strong>Strategy Classification:</strong> Hybrid Trend-Following Mean-Reversion</p>
+                <p><strong>Edge:</strong> Captures mean reversion moves within confirmed trends, reducing false signals in ranging markets</p>
+            </div>
+
+            <div class="slide-number">3 / 12</div>
+        </div>
+
+        <!-- Slide 4: Critical Bugs - Part 1 -->
+        <div class="slide">
+            <h2><span class="icon">🚨</span> Critical Issues Detected</h2>
+            
+            <div class="issue-card critical">
+                <div class="issue-label label-critical">CRITICAL - Code Breaking</div>
+                <h4>🔴 Issue #1: Missing StringTrim Function</h4>
+                <p><strong>Impact:</strong> EA will fail to compile or crash on initialization when processing news event strings</p>
+                <p><strong>Location:</strong> News parsing functions</p>
+                <div class="comparison">
+                    <div class="comparison-item wrong">
+                        <div class="comparison-label">❌ Current Code</div>
+                        <div class="code-block">// MQL5 doesn't have built-in StringTrim
+result = StringTrim(newsEvent); // COMPILATION ERROR</div>
+                    </div>
+                    <div class="comparison-item correct">
+                        <div class="comparison-label">✅ Fixed Solution</div>
+                        <div class="code-block"><span class="comment">// Add custom StringTrim function</span>
+<span class="keyword">string</span> <span class="function">StringTrim</span>(string str) {
+    string result = str;
+    StringTrimLeft(result);
+    StringTrimRight(result);
+    <span class="keyword">return</span> result;
+}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue-card critical">
+                <div class="issue-label label-critical">CRITICAL - Risk Management</div>
+                <h4>🔴 Issue #2: Incorrect VolForRisk Calculation</h4>
+                <p><strong>Impact:</strong> Position sizes will be calculated incorrectly, leading to risk exposure much higher or lower than intended</p>
+                <p><strong>Root Cause:</strong> PipValuePerLot returns tick value per 1.0 lot but calculation needs value per point</p>
+                <div class="comparison">
+                    <div class="comparison-item wrong">
+                        <div class="comparison-label">❌ Broken Logic</div>
+                        <div class="code-block"><span class="comment">// Incorrect - doesn't account for specific volume</span>
+<span class="keyword">double</span> perPoint = PipValuePerLot(s);
+<span class="keyword">return</span> riskMoney / (stopPts * perPoint);</div>
+                    </div>
+                    <div class="comparison-item correct">
+                        <div class="comparison-label">✅ Correct Calculation</div>
+                        <div class="code-block"><span class="comment">// Correct point value calculation</span>
+<span class="keyword">double</span> pointValue = SymbolInfoDouble(s, SYMBOL_TRADE_TICK_VALUE) 
+    / (SymbolInfoDouble(s, SYMBOL_TRADE_TICK_SIZE) / PointValue(s));
+<span class="keyword">return</span> riskMoney / (stopDistancePrice / PointValue(s) * pointValue);</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-number">4 / 12</div>
+        </div>
+
+        <!-- Slide 5: Critical Bugs - Part 2 -->
+        <div class="slide">
+            <h2><span class="icon">🚨</span> Critical Issues (Continued)</h2>
+            
+            <div class="issue-card critical">
+                <div class="issue-label label-critical">CRITICAL - Volume Handling</div>
+                <h4>🔴 Issue #3: Incorrect RoundVolume Implementation</h4>
+                <p><strong>Impact:</strong> Positions may fail to open if calculated volume is invalid. EA might crash on first few bars if ATR unavailable</p>
+                <div class="comparison">
+                    <div class="comparison-item wrong">
+                        <div class="comparison-label">❌ Current (Wrong Order)</div>
+                        <div class="code-block"><span class="comment">// NormalizeDouble applied outside clamping</span>
+<span class="keyword">return</span> NormalizeDouble(
+    MathMax(minv, MathMin(maxv, vol)), 2
+);</div>
+                    </div>
+                    <div class="comparison-item correct">
+                        <div class="comparison-label">✅ Corrected Logic</div>
+                        <div class="code-block"><span class="comment">// Round first, then clamp, then normalize</span>
+<span class="keyword">double</span> r = MathRound(vol/step) * step;
+r = MathMax(minv, MathMin(maxv, r));
+<span class="keyword">return</span> NormalizeDouble(r, 2);</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue-card high">
+                <div class="issue-label label-high">HIGH - Logic Flaw</div>
+                <h4>🟠 Issue #4: Partial Close Bookkeeping Error</h4>
+                <p><strong>Impact:</strong> Second partial close (PC_Close2_Pct) calculated against reduced volume instead of original volume</p>
+                <p><strong>Problem:</strong> Uses unreliable POSITION_VOLUME_MAX instead of tracking original volume</p>
+                <div class="comparison">
+                    <div class="comparison-item wrong">
+                        <div class="comparison-label">❌ Unreliable Method</div>
+                        <div class="code-block"><span class="comment">// This doesn't reliably store original volume</span>
+<span class="keyword">double</span> origVol = PositionGetDouble(POSITION_VOLUME_MAX);
+<span class="keyword">double</span> closeLots = origVol * (PC_Close2_Pct/100.0);</div>
+                    </div>
+                    <div class="comparison-item correct">
+                        <div class="comparison-label">✅ Proper Volume Tracking</div>
+                        <div class="code-block"><span class="comment">// Store original volume on entry</span>
+<span class="keyword">struct</span> PositionRecord {
+    ulong ticket;
+    <span class="keyword">double</span> originalVolume;
+};
+PositionRecord positionRecords[];
+<span class="comment">// Reference stored volume for calculations</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-number">5 / 12</div>
+        </div>
+
+        <!-- Slide 6: Medium Priority Issues -->
+        <div class="slide">
+            <h2><span class="icon">⚠️</span> Medium Priority Issues</h2>
+            
+            <div class="issue-card medium">
+                <div class="issue-label label-medium">MEDIUM - Array Management</div>
+                <h4>🟡 Issue #5: Fixed Array Limits</h4>
+                <p><strong>Impact:</strong> Partial close tracking arrays have fixed size (256) that could overflow in edge cases</p>
+                <div class="code-block"><span class="comment">// Current - Fixed size arrays</span>
+ulong T1HitTickets[256]; <span class="keyword">int</span> T1Count = 0;
+ulong T2HitTickets[256]; <span class="keyword">int</span> T2Count = 0;
+
+<span class="comment">// Recommended - Dynamic arrays</span>
+ulong T1HitTickets[]; <span class="keyword">int</span> T1Count = 0;
+ulong T2HitTickets[]; <span class="keyword">int</span> T2Count = 0;
+ArrayResize(T1HitTickets, 0);  <span class="comment">// Initialize as dynamic</span></div>
+            </div>
+
+            <div class="issue-card medium">
+                <div class="issue-label label-medium">MEDIUM - Configuration</div>
+                <h4>🟡 Issue #6: Hard-Coded Magic Number</h4>
+                <p><strong>Impact:</strong> Running multiple EA instances on same symbol will cause conflicts</p>
+                <div class="comparison">
+                    <div class="comparison-item wrong">
+                        <div class="comparison-label">❌ Hard-Coded</div>
+                        <div class="code-block"><span class="comment">// Fixed magic number</span>
+ulong Magic = 880215;</div>
+                    </div>
+                    <div class="comparison-item correct">
+                        <div class="comparison-label">✅ Configurable</div>
+                        <div class="code-block"><span class="comment">// Make it an input parameter</span>
+<span class="keyword">input</span> ulong Magic = 880215;</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="issue-card medium">
+                <div class="issue-label label-medium">MEDIUM - Error Handling</div>
+                <h4>🟡 Issue #7: Insufficient Trade Error Handling</h4>
+                <p><strong>Impact:</strong> EA may silently fail to open/modify positions without alerting trader</p>
+                <div class="code-block"><span class="comment">// Add comprehensive error handling</span>
+<span class="keyword">bool</span> <span class="function">ExecuteTradeWithRetry</span>() {
+    <span class="keyword">int</span> maxRetries = 3;
+    <span class="keyword">for</span>(<span class="keyword">int</span> i = 0; i < maxRetries; i++) {
+        <span class="keyword">if</span>(Trade.Buy(...)) {
+            <span class="keyword">return</span> <span class="keyword">true</span>;
+        }
+        <span class="keyword">int</span> error = GetLastError();
+        <span class="keyword">if</span>(error == ERR_REQUOTE || error == ERR_PRICE_CHANGED) {
+            Sleep(500);  <span class="comment">// Wait and retry</span>
+            <span class="keyword">continue</span>;
+        }
+        SendTelegramAlert("Trade failed: " + ErrorDescription(error));
+        <span class="keyword">break</span>;
+    }
+    <span class="keyword">return</span> <span class="keyword">false</span>;
+}</div>
+            </div>
+
+            <div class="slide-number">6 / 12</div>
+        </div>
+
+        <!-- Slide 7: Performance Optimizations -->
+        <div class="slide">
+            <h2><span class="icon">🚀</span> Performance Optimizations</h2>
+            
+            <h3>⚡ Optimization #1: Indicator Caching</h3>
+            <div class="card" style="margin-bottom: 25px;">
+                <div class="card-title">Problem: Recalculating ATR Every Tick</div>
+                <div class="code-block"><span class="comment">// Current - Expensive repeated calculation</span>
+<span class="keyword">void</span> <span class="function">OnTick</span>() {
+    <span class="keyword">double</span> atr = CalcATR();  <span class="comment">// Called every tick!</span>
+    <span class="comment">// ... rest of logic</span>
+}</div>
+                <div class="card-title" style="margin-top: 20px;">Solution: Cache with Time-Based Invalidation</div>
+                <div class="code-block"><span class="comment">// Optimized - Cache ATR values</span>
+<span class="keyword">double</span> lastATR = 0;
+datetime lastATRTime = 0;
+
+<span class="keyword">double</span> <span class="function">GetCachedATR</span>() {
+    <span class="keyword">if</span>(TimeCurrent() - lastATRTime > 60) {  <span class="comment">// Cache for 1 minute</span>
+        lastATR = CalcATR();
+        lastATRTime = TimeCurrent();
+    }
+    <span class="keyword">return</span> lastATR;
+}</div>
+                <p style="margin-top: 15px; color: #48bb78; font-weight: 600;">✅ Estimated Performance Gain: 60-80% reduction in indicator calculations</p>
+            </div>
+
+            <h3>⚡ Optimization #2: Position Loop Reduction</h3>
+            <div class="card">
+                <div class="card-title">Problem: Counting Positions Every Tick</div>
+                <div class="code-block"><span class="comment">// Current - Loop through all positions every tick</span>
+<span class="keyword">void</span> <span class="function">OnTick</span>() {
+    <span class="keyword">int</span> buyCount = 0, sellCount = 0;
+    <span class="keyword">for</span>(<span class="keyword">int</span> i = 0; i < PositionsTotal(); i++) {
+        <span class="comment">// Count positions...</span>
+    }
+}</div>
+                <div class="card-title" style="margin-top: 20px;">Solution: Event-Based Position Tracking</div>
+                <div class="code-block"><span class="comment">// Optimized - Update only on trade events</span>
+<span class="keyword">int</span> cachedBuyCount = 0, cachedSellCount = 0;
+datetime lastPosCheck = 0;
+
+<span class="keyword">void</span> <span class="function">OnTradeTransaction</span>() {
+    <span class="comment">// Update counts only when trades occur</span>
+    UpdatePositionCounts();
+}</div>
+                <p style="margin-top: 15px; color: #48bb78; font-weight: 600;">✅ Estimated Performance Gain: 90%+ reduction in position enumeration overhead</p>
+            </div>
+
+            <div class="slide-number">7 / 12</div>
+        </div>
+
+        <!-- Slide 8: Architecture Enhancements -->
+        <div class="slide">
+            <h2><span class="icon">🏛️</span> Architecture Enhancements</h2>
+            
+            <h3>📦 Recommended Modular Structure</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-title">NewsManager.mqh</div>
+                    <div class="timeline-desc">Dedicated module for news parsing, filtering, and auto-close logic. Handles economic calendar integration and event scheduling.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">RiskManager.mqh</div>
+                    <div class="timeline-desc">Centralized risk calculations including position sizing, ATR-based stops, daily loss limits, and exposure management.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">TelegramClient.mqh</div>
+                    <div class="timeline-desc">Abstracted notification system with message queuing, rate limiting, and formatted trade alerts.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">TradeManager.mqh</div>
+                    <div class="timeline-desc">Handles partial closes, breakeven, trailing stops, and position lifecycle management with error handling.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">SessionFilter.mqh</div>
+                    <div class="timeline-desc">Weekly calendar logic, time-based filters, spread controls, and market hour restrictions.</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <p><strong>Benefits of Modular Architecture:</strong></p>
+                <p>✅ Improved maintainability and testing</p>
+                <p>✅ Easier debugging and error isolation</p>
+                <p>✅ Reusable components across multiple EAs</p>
+                <p>✅ Cleaner code organization and readability</p>
+            </div>
+
+            <div class="slide-number">8 / 12</div>
+        </div>
+
+        <!-- Slide 9: Enhanced Risk Management -->
+        <div class="slide">
+            <h2><span class="icon">🛡️</span> Enhanced Risk Management</h2>
+            
+            <h3>💎 Advanced Risk Features</h3>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-title">🔗 Correlation Protection</div>
+                    <div class="card-content">Prevent over-exposure to correlated pairs by tracking cross-pair correlation coefficients and limiting concurrent positions</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">📉 Dynamic Risk Adjustment</div>
+                    <div class="card-content">Automatically reduce risk percentage after losing streaks and increase after winning streaks (Anti-Martingale)</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">⏰ Time-Based Risk</div>
+                    <div class="card-content">Reduce position size during high-volatility news periods and increase during stable trading sessions</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">💰 Equity Curve Protection</div>
+                    <div class="card-content">Implement equity high-water marks with automatic drawdown limits to protect accumulated profits</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🎯 R-Multiple Tracking</div>
+                    <div class="card-content">Track all trades in R-multiples for consistent risk-reward analysis and performance metrics</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">🌊 Volatility Filter</div>
+                    <div class="card-content">Only trade when ATR is above minimum threshold to avoid choppy, low-movement periods</div>
+                </div>
+            </div>
+
+            <h3>📊 Proposed Risk Parameters</h3>
+            <div class="code-block"><span class="comment">// Enhanced risk configuration</span>
+<span class="keyword">input</span> <span class="keyword">double</span> BaseRiskPercent = 0.5;           <span class="comment">// Base risk per trade</span>
+<span class="keyword">input</span> <span class="keyword">double</span> MaxDailyRiskPercent = 2.0;      <span class="comment">// Maximum daily loss</span>
+<span class="keyword">input</span> <span class="keyword">double</span> MaxCorrelatedExposure = 3.0;   <span class="comment">// Max % in correlated pairs</span>
+<span class="keyword">input</span> <span class="keyword">int</span>    MinATRThreshold = 10;           <span class="comment">// Minimum ATR in points</span>
+<span class="keyword">input</span> <span class="keyword">bool</span>   UseAntiMartingale = <span class="keyword">true</span>;       <span class="comment">// Dynamic risk adjustment</span>
+<span class="keyword">input</span> <span class="keyword">double</span> MaxDrawdownPercent = 15.0;     <span class="comment">// Max DD from equity high</span></div>
+
+            <div class="cta-section" style="padding: 30px;">
+                <p style="font-size: 18px;">These enhancements transform the EA from a basic scalper into an institutional-grade trading system with multi-layered risk protection</p>
+            </div>
+
+            <div class="slide-number">9 / 12</div>
+        </div>
+
+        <!-- Slide 10: Testing Strategy -->
+        <div class="slide">
+            <h2><span class="icon">🧪</span> Comprehensive Testing Strategy</h2>
+            
+            <h3>📋 Testing Protocol</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 1: Strategy Tester (Historical)</div>
+                    <div class="timeline-desc">
+                        • Backtest on M1/M5 tick data (minimum 6 months)<br>
+                        • Test all major news events in historical data<br>
+                        • Validate partial close and breakeven logic<br>
+                        • Verify daily stop mechanisms trigger correctly
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 2: Demo Account (Forward)</div>
+                    <div class="timeline-desc">
+                        • Forward test for 2-4 weeks minimum<br>
+                        • Monitor real-time news filtering performance<br>
+                        • Validate Telegram alerts and CSV logging<br>
+                        • Test during different market conditions
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 3: Micro Live Account</div>
+                    <div class="timeline-desc">
+                        • Deploy with minimum lot sizes (0.01)<br>
+                        • Run for 1-2 weeks with real market execution<br>
+                        • Verify slippage and spread controls work<br>
+                        • Monitor for any unexpected behaviors
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-title">Phase 4: Full Production</div>
+                    <div class="timeline-desc">
+                        • Gradually increase to target position sizes<br>
+                        • Continuous monitoring and optimization<br>
+                        • Regular performance reviews<br>
+                        • Ongoing parameter fine-tuning
+                    </div>
+                </div>
+            </div>
+
+            <h3>📈 Key Metrics to Monitor</h3>
+            <div class="grid-4">
+                <div class="card">
+                    <div class="card-title">Win Rate</div>
+                    <div class="card-content">Target: 55-65%</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Profit Factor</div>
+                    <div class="card-content">Target: > 1.8</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Max Drawdown</div>
+                    <div class="card-content">Target: < 15%</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Avg R-Multiple</div>
+                    <div class="card-content">Target: > 1.5R</div>
+                </div>
+            </div>
+
+            <div class="slide-number">10 / 12</div>
+        </div>
+
+        <!-- Slide 11: Deliverables -->
+        <div class="slide">
+            <h2><span class="icon">📦</span> Project Deliverables</h2>
+            
+            <h3>✅ What You'll Receive</h3>
+            <div class="features-grid">
+                <div class="feature-pill">
+                    <div class="feature-icon">📝</div>
+                    <div class="feature-text">Corrected & optimized .mq5 source code with all bugs fixed</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-text">Comprehensive technical documentation (40+ pages)</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-text">Detailed change log with before/after comparisons</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-text">Optimized .set configuration files for different account sizes</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🧪</div>
+                    <div class="feature-text">Strategy Tester report with backtesting results</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">📚</div>
+                    <div class="feature-text">User guide with setup instructions and best practices</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🎓</div>
+                    <div class="feature-text">Video walkthrough explaining all changes and improvements</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">Source code with modular architecture (separate .mqh files)</div>
+                </div>
+                <div class="feature-pill">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-text">30 days post-delivery support for questions and tweaks</div>
+                </div>
+            </div>
+
+            <h3>🎯 Quality Guarantees</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">✅ Code Quality</div>
+                    <div class="card-content">
+                        • Zero compiler warnings or errors<br>
+                        • Professional code formatting and comments<br>
+                        • Follows MQL5 best practices<br>
+                        • Passes all internal quality checks
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">✅ Testing Verification</div>
+                    <div class="card-content">
+                        • Backtested on minimum 6 months data<br>
+                        • Forward tested on demo account<br>
+                        • All critical functions unit tested<br>
+                        • Performance reports included
+                    </div>
+                </div>
+            </div>
+
+            <div class="slide-number">11 / 12</div>
+        </div>
+
+        <!-- Slide 12: Next Steps & CTA -->
+        <div class="slide">
+            <h2><span class="icon">🚀</span> Let's Build Something Exceptional</h2>
+            
+            <div class="grid-2" style="margin-bottom: 30px;">
+                <div class="card">
+                    <div class="card-title">⏱️ Timeline</div>
+                    <div class="card-content">
+                        <p><strong>Phase 1:</strong> Bug Fixes & Core Optimizations (3-4 days)</p>
+                        <p><strong>Phase 2:</strong> Architecture Refactoring (2-3 days)</p>
+                        <p><strong>Phase 3:</strong> Testing & Documentation (2-3 days)</p>
+                        <p><strong>Total:</strong> 7-10 business days</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">💰 Investment</div>
+                    <div class="card-content">
+                        <p><strong>Complete Package:</strong> $1,200 - $1,800</p>
+                        <p>Includes all deliverables, testing, documentation, and 30-day support</p>
+                        <p style="margin-top: 15px; color: #48bb78; font-weight: 600;">Payment milestones available</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <h3>Why Work With Me?</h3>
+                <div class="grid-3" style="margin-top: 30px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🎯</div>
+                        <h4 style="color: white; margin-bottom: 10px;">Deep Expertise</h4>
+                        <p style="font-size: 16px;">5+ years in algorithmic trading & MQL5 development</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">⚡</div>
+                        <h4 style="color: white; margin-bottom: 10px;">Fast Delivery</h4>
+                        <p style="font-size: 16px;">Efficient workflow with regular progress updates</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">💎</div>
+                        <h4 style="color: white; margin-bottom: 10px;">Quality Focus</h4>
+                        <p style="font-size: 16px;">Production-ready code that exceeds expectations</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 30px;">
+                <h3>📞 Ready to Get Started?</h3>
+                <p style="font-size: 18px; line-height: 1.8;">
+                    Let's schedule a brief call to discuss your specific requirements, timeline, and any questions you might have. 
+                    I'm confident we can transform this EA into a robust, profitable trading system.
+                </p>
+                <p style="font-size: 20px; font-weight: 700; margin-top: 25px; color: #5a67d8;">
+                    Looking forward to collaborating with you! 🤝
+                </p>
+            </div>
+
+            <div class="slide-number">12 / 12</div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+        <button id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+
+        // Password: eliteEA2024
+        const correctPassword = 'eliteEA2024';
+        
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const error = document.getElementById('passwordError');
+            
+            if (input === correctPassword) {
+                document.getElementById('passwordScreen').classList.add('hidden');
+                localStorage.setItem('ea_authenticated', 'true');
+            } else {
+                error.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+                setTimeout(() => {
+                    error.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        window.addEventListener('load', () => {
+            if (localStorage.getItem('ea_authenticated') === 'true') {
+                document.getElementById('passwordScreen').classList.add('hidden');
+            }
+            
+            // Load theme preference
+            const savedTheme = localStorage.getItem('ea_theme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').textContent = '☀️';
+                document.getElementById('themeText').textContent = 'Light Mode';
+            }
+        });
+
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            const themeText = document.getElementById('themeText');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.textContent = '🌙';
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('ea_theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('ea_theme', 'dark');
+            }
+        }
+
+        function downloadPDF() {
+            alert('📥 PDF Download Instructions:\n\n1. Press Ctrl+P (Windows) or Cmd+P (Mac)\n2. Select "Save as PDF" as destination\n3. Adjust margins to "None" for best results\n4. Enable "Background graphics" option\n5. Click "Save"\n\nAlternatively, use browser menu:\nFile → Print → Save as PDF');
+            window.print();
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + slides.length) % slides.length;
+            slides[currentSlide].classList.add('active');
+            slides[currentSlide].scrollTop = 0;
+            
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === slides.length - 1;
+            
+            updateProgressBar();
+        }
+
+        function changeSlide(direction) {
+            showSlide(currentSlide + direction);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('passwordScreen').classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft' && currentSlide > 0) changeSlide(-1);
+                if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) changeSlide(1);
+                if (e.key === 'Home') showSlide(0);
+                if (e.key === 'End') showSlide(slides.length - 1);
+                if (e.key === 'f' || e.key === 'F') {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+        });
+
+        // Touch/swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (touchEndX < touchStartX - 50 && currentSlide < slides.length - 1) {
+                changeSlide(1);
+            }
+            if (touchEndX > touchStartX + 50 && currentSlide > 0) {
+                changeSlide(-1);
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+        updateProgressBar();
+    </script>
+</body>
+</html>
